@@ -292,10 +292,40 @@
     renderCenter(g);
     renderModals(g);
     renderSpy(g);
+    renderPeek(g);
     const spect = m.seat == null;
     $('#hide-btn').hidden = spect;
     $('#t-last').disabled = !g.lastTrick;
   }
+
+  // Vue admin : visible seulement tant qu'on maintient la touche ² (ou un appui long sur l'ardoise)
+  function renderPeek(g) {
+    const box = $('#peek');
+    if (!g.peek || !app.peeking) { box.hidden = true; return; }
+    const me = mySeat();
+    const trump = g.contract && g.phase !== 'bidding' ? g.contract.suit : null;
+    const h = (me == null ? [0, 1, 2, 3] : [1, 2, 3].map((k) => (me + k) % 4)).map((s) => '<div class="pk-row"><b>' + esc(nameAt(s)) + '</b><span class="pk-cards">' +
+      sortHand(g.peek[s], trump).map((c) => '<img src="../common/cards/' + c + '.svg" alt="">').join('') + '</span></div>').join('');
+    if (box.dataset.h !== h) { box.dataset.h = h; box.innerHTML = h; }
+    box.hidden = false;
+  }
+  function setPeek(v) {
+    if (app.peeking === v) return;
+    app.peeking = v;
+    if (app.msg && app.msg.game) renderPeek(app.msg.game);
+  }
+  document.addEventListener('keydown', (e) => { if ((e.key === '²' || e.key === '`') && !e.target.matches('input, textarea, select')) { e.preventDefault(); setPeek(true); } });
+  document.addEventListener('keyup', (e) => { if (e.key === '²' || e.key === '`') setPeek(false); });
+  window.addEventListener('blur', () => setPeek(false));
+  (function () {
+    let t = null, long = false;
+    const slate = document.getElementById('slate');
+    slate.addEventListener('pointerdown', () => { long = false; t = setTimeout(() => { long = true; setPeek(true); }, 450); });
+    const up = () => { clearTimeout(t); setPeek(false); };
+    slate.addEventListener('pointerup', up); slate.addEventListener('pointerleave', up); slate.addEventListener('pointercancel', up);
+    slate.addEventListener('click', (e) => { if (long) { e.stopImmediatePropagation(); e.preventDefault(); long = false; } }, true);
+    slate.addEventListener('contextmenu', (e) => e.preventDefault());
+  })();
 
   // Vue spectateur (/spec) : les mains de tout le monde
   function renderSpy(g) {

