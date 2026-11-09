@@ -168,7 +168,7 @@
       tricksWon: [0, 0],
       lastTrick: null,
       played: [],
-      belote: null,         // {seat, step:0|1|2}
+      belotes: [],          // [{seat, suit, step:0|1|2}] — à tout atout, une par couleur
       lastRound: null,
       winner: null,
       seq: 0,
@@ -204,7 +204,7 @@
     g.tricksWon = [0, 0];
     g.lastTrick = null;
     g.played = [];
-    g.belote = null;
+    g.belotes = [];
     g.lastRound = null;
     g.phase = 'bidding';
     g.seq++;
@@ -237,7 +237,9 @@
     g.leader = g.turn;
     const t = g.contract.suit;
     for (let s = 0; s < 4; s++) {
-      if (g.hands[s].includes('K' + t) && g.hands[s].includes('Q' + t)) g.belote = { seat: s, step: 0 };
+      // Belote : Roi + Dame d'atout. À tout atout, toutes les belotes comptent (une par couleur).
+      const bs = t === 'TA' ? SUITS : SUITS.includes(t) ? [t] : [];
+      for (const su of bs) if (g.hands[s].includes('K' + su) && g.hands[s].includes('Q' + su)) g.belotes.push({ seat: s, suit: su, step: 0 });
     }
     events.push({ type: 'contract', contract: g.contract, coinche: g.coinche });
   }
@@ -320,9 +322,10 @@
 
     // Belote / Rebelote
     const t = g.contract.suit;
-    if (g.belote && g.belote.seat === seat && (card === 'K' + t || card === 'Q' + t)) {
-      g.belote.step++;
-      ev.push({ type: 'belote', seat, word: g.belote.step === 1 ? 'Belote !' : 'Rebelote !' });
+    const bel = g.belotes.find((b) => b.seat === seat && (card === 'K' + b.suit || card === 'Q' + b.suit));
+    if (bel) {
+      bel.step++;
+      ev.push({ type: 'belote', seat, suit: bel.suit, word: bel.step === 1 ? 'Belote !' : 'Rebelote !' });
     }
 
     if (g.trick.length === 4) {
@@ -386,8 +389,8 @@
     const raw = card.slice();
     if (capotTeam != null) { card[capotTeam] = CAPOT_POINTS; card[1 - capotTeam] = 0; }
     const belote = [0, 0];
-    let beloteTeam = null;
-    if (g.belote && g.belote.step >= 2) { beloteTeam = teamOf(g.belote.seat); belote[beloteTeam] = BELOTE_PTS; }
+    let beloteTeam = null, beloteCount = [0, 0];
+    for (const b of g.belotes) if (b.step >= 2) { const tm = teamOf(b.seat); belote[tm] += BELOTE_PTS; beloteCount[tm]++; beloteTeam = tm; }
     const total = [card[0] + belote[0], card[1] + belote[1]];
 
     let made;
@@ -410,7 +413,7 @@
     g.scores[1] += gain[1];
     const entry = {
       round: g.round, dealer: g.dealer, contract: { ...c }, coinche: g.coinche, coincheSeat: g.coincheSeat,
-      made, cardPoints: card, rawPoints: raw, belote, beloteTeam, total, capotTeam, mult, gain,
+      made, cardPoints: card, rawPoints: raw, belote, beloteTeam, beloteCount, total, capotTeam, mult, gain,
       tricksWon: g.tricksWon.slice(), scores: g.scores.slice(), lastTrickTeam: g.lastTrickTeam,
     };
     g.history.push(entry);
@@ -441,7 +444,7 @@
       bids: g.bids, contract: g.contract, coinche: g.coinche, coincheSeat: g.coincheSeat, turn: g.turn,
       trick: g.trick, trickDone: g.trickDone, trickWinner: g.trickWinner, leader: g.leader,
       tricksWon: g.tricksWon, tricksPlayed: g.tricksPlayed, lastTrick: g.lastTrick,
-      belote: g.belote && g.belote.step > 0 ? { seat: g.belote.seat, step: g.belote.step } : null,
+      belotes: g.belotes.filter((b) => b.step > 0).map((b) => ({ seat: b.seat, suit: b.suit, step: b.step })),
       lastRound: g.lastRound, winner: g.winner, seq: g.seq,
       handCounts: g.hands.map((h) => h.length),
       surcoinche: !!g.surcoincheQueue,

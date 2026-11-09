@@ -180,7 +180,7 @@
     for (const ev of evs) {
       if (ev.type === 'play') Sound.play('card');
       else if (ev.type === 'deal') Sound.play('deal');
-      else if (ev.type === 'belote') { app.flash[ev.seat] = { html: ev.word, cls: 'belote', until: now + 2600 }; Sound.play('belote'); }
+      else if (ev.type === 'belote') { const ta = msg.game && msg.game.contract && msg.game.contract.suit === 'TA'; app.flash[ev.seat] = { html: ev.word + (ta ? ' ' + suitHtml(ev.suit) : ''), cls: 'belote', until: now + 2600 }; Sound.play('belote'); }
       else if (ev.type === 'bid' && (ev.bid.type === 'coinche' || ev.bid.type === 'surcoinche')) Sound.play('coinche');
       else if (ev.type === 'trickwin') setTimeout(() => Sound.play('trick'), 500);
       else if (ev.type === 'chat') {
@@ -645,7 +645,7 @@
     let h = '<thead><tr><th></th><th><span class="team-chip t0">' + esc(teamName(0)) + '</span></th><th><span class="team-chip t1">' + esc(teamName(1)) + '</span></th></tr></thead><tbody>';
     if (r.capotTeam != null) h += row('Points des plis (capot !)', r.cardPoints[0], r.cardPoints[1]);
     else h += row('Points des plis (dont 10 de der)', r.cardPoints[0], r.cardPoints[1]);
-    if (r.beloteTeam != null) h += row('Belote-rebelote', r.belote[0] || '–', r.belote[1] || '–');
+    if (r.belote[0] + r.belote[1] > 0) h += row(r.beloteCount && r.beloteCount[0] + r.beloteCount[1] > 1 ? 'Belotes-rebelotes (20 chacune)' : 'Belote-rebelote', r.belote[0] || '–', r.belote[1] || '–');
     h += row('Total réalisé', r.total[0], r.total[1]);
     h += row('Points marqués', '+' + r.gain[0], '+' + r.gain[1], 'final');
     h += row('Score', r.scores[0], r.scores[1], 'tot');
