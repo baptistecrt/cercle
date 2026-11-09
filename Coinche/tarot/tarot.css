@@ -137,3 +137,25 @@ body.theme-tarot {
   .plate .tags, .plate .sub { display: none; }
   .ttrick, .tcenter { top: 52%; }
 }
+
+/* ---------- Téléphone ---------- */
+@media (max-width: 760px) {
+  body.theme-tarot { --cw: clamp(44px, 12.5vw, 64px); }
+  .thand-zone { bottom: calc(var(--ch) * -0.06 + 54px); }
+  .thand-zone.two { height: calc(var(--ch) * 1.75); }
+  .pos-bottom { bottom: calc(var(--ch) * 0.98 + 66px); }
+  .two-rows .pos-bottom { bottom: calc(var(--ch) * 1.55 + 66px); }
+  .tpill { bottom: calc(var(--ch) * 0.98 + 112px); }
+  .two-rows .tpill { bottom: calc(var(--ch) * 1.55 + 112px); }
+  .poig { bottom: calc(var(--ch) * 0.98 + 150px); white-space: normal; flex-wrap: wrap; justify-content: center; max-width: calc(100vw - 24px); border-radius: 16px; }
+  .two-rows .poig { bottom: calc(var(--ch) * 1.55 + 150px); }
+  .ttools { bottom: calc(var(--ch) * 1.1 + 130px); }
+  .two-rows .ttools { bottom: calc(var(--ch) * 1.7 + 130px); }
+  .two-rows .ttrick, .two-rows .tcenter { top: 44%; }
+  .two-rows .pos-left, .two-rows .pos-right { top: 30%; }
+  .tpanel { padding: 12px; }
+  .tpanel .row { gap: 6px; }
+  .lvl { min-width: 0; flex: 1 1 40%; padding: 8px; }
+  .carnet { width: 150px; }
+  .carnet .crow { font-size: 16px; line-height: 21px; }
+}

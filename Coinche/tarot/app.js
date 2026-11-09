@@ -279,6 +279,23 @@
     const cards = Array.from(el.children), n = cards.length;
     if (!n) return;
     const w = measure();
+    // Téléphone : au-delà de 12 cartes, la main passe sur deux rangées pour rester lisible
+    const two = window.innerWidth < 640 && n > 12;
+    el.parentElement.classList.toggle('two', two);
+    document.getElementById('tt').classList.toggle('two-rows', two);
+    if (two) {
+      const per = Math.ceil(n / 2);
+      const avail2 = window.innerWidth - 24;
+      cards.forEach((c, i) => {
+        const row = i < per ? 0 : 1, k = row ? n - per : per, j = row ? i - per : i;
+        const sp = k > 1 ? Math.min(w * .78, (avail2 - w) / (k - 1)) : 0;
+        c.style.setProperty('--x', (j - (k - 1) / 2) * sp + 'px');
+        c.style.setProperty('--y', (row ? 0 : -w * 1.395 * .62) + 'px');
+        c.style.setProperty('--r', '0deg');
+        c.style.zIndex = (row ? 100 : 0) + j + 1;
+      });
+      return;
+    }
     const avail = Math.min(window.innerWidth - 40, w * 11);
     const sp = n > 1 ? Math.min(w * .62, (avail - w) / (n - 1)) : 0;
     cards.forEach((c, i) => {
@@ -401,6 +418,21 @@
     }
   }
 
+  // Vue spectateur (/spec) : les mains de tout le monde
+  function spyRows(g) {
+    const mini = (c) => '<span class="mc" title="' + esc(T.cardLabel(c)) + '">' + C.cardInner(c) + '</span>';
+    let h = '';
+    for (let s = 0; s < g.n; s++) {
+      const tags = [];
+      if (g.contract && g.contract.seat === s) tags.push('<span class="tag hl">Preneur</span>');
+      if (g.spyPartner != null && g.spyPartner === s && g.contract && g.spyPartner !== g.contract.seat) tags.push('<span class="tag hl">Partenaire</span>');
+      h += '<div class="sp-row"><b>' + esc(g.names[s]) + ' ' + tags.join('') + '</b><div class="sp-cards">' + sortHand(g.allHands[s]).map(mini).join('') + '</div></div>';
+    }
+    const ch = g.contract && g.contract.level <= 2 && g.phase !== 'bidding' && g.phase !== 'call' && g.phase !== 'chien' ? g.spyEcart : g.spyChien;
+    if (ch && ch.length) h += '<div class="sp-row"><b>' + (ch === g.spyEcart ? 'Écart' : 'Chien') + '</b><div class="sp-cards">' + sortHand(ch).map(mini).join('') + '</div></div>';
+    return h;
+  }
+
   function hero() {
     return '<div class="tfan">' + ['T01', 'T21', 'EX', 'H14', 'S12'].map((c, i) => `<div class="card" style="--r:${(i - 2) * 11}deg">${C.cardInner(c)}</div>`).join('') + '</div>';
   }
@@ -422,7 +454,7 @@
   window.SalleRoom.start({
     module: T.module, title: 'Tarot', prefix: 'T', themeClass: 'theme-tarot', hideable: true, soloPlayers: 4,
     tagline: 'Prise, garde, chien et petit au bout. De 3 à 5 joueurs.',
-    hero: hero(), rulesHtml: rules, render, onEvent,
+    hero: hero(), rulesHtml: rules, render, onEvent, spyRows,
     lobbyNote: 'On joue dans le sens inverse des aiguilles d\'une montre, dans l\'ordre des places.',
   });
 })();

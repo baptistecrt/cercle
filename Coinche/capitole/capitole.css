@@ -140,3 +140,32 @@ body.theme-capitole {
   .cside { max-height: none; width: 100%; }
   .theme-capitole .r-dock { right: auto; left: 18px; }
 }
+
+/* ---------- Téléphone ---------- */
+.cpanel-m { display: none; }
+@media (max-width: 1000px) {
+  .croom { padding: 8px 8px 70px; gap: 10px; }
+  .ccenter .cmid #c-panel { display: none; }
+  .cpanel-m { display: block; }
+  .cpanel-m:empty { display: none; }
+  .cpanel-m .cpanel { width: 100%; font-size: 1rem; }
+  .cpanel-m .cpanel h3 { font-size: 1.3rem; }
+  .cpanel-m .cstatus { font-size: 1.15rem; color: var(--cream); }
+  .cside { order: 2; display: flex; flex-direction: column; }
+  .cpanel-m { order: 0; } .cbtns { order: 1; } .cinfo { order: 2; } #c-trade { order: 3; } #c-players { order: 4; } .clog { order: 5; }
+  .ccard { position: fixed; top: 40%; font-size: 15px; width: min(88vw, 340px); z-index: 50; }
+  .facade { width: 55%; }
+  .ctitle { font-size: 4.4em; }
+  .dice { transform: scale(2.4); margin: 2.2em 0 1.4em; }
+}
+@media (max-width: 640px) {
+  .sq:not(.corner) .nm, .sq:not(.corner) .pr { display: none; }
+  .sq.corner .nm { font-size: 1.7em; }
+  .sq .ico { height: 52%; }
+  .side-l .band, .side-r .band { width: 26%; }
+  .side-b .band, .side-t .band { height: 26%; }
+  .bld i { width: 1.8em; height: 1.6em; } .bld i.hotel { width: 3.2em; height: 2em; }
+  .cplayer { padding: 8px 10px; }
+  .cplayer .money { font-size: 1.1rem; }
+  .cbtns .r-btn { padding: .6em .4em; font-size: .9rem; }
+}

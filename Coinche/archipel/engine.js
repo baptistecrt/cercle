@@ -578,6 +578,7 @@
     defaultSettings: { vp: 10 },
     settingsUI: [{ key: 'vp', label: 'Points pour gagner', options: [{ value: 8, label: '8 points (partie courte)' }, { value: 10, label: '10 points (classique)' }, { value: 12, label: '12 points (partie longue)' }] }],
     create, apply, view, waiting, bot, fallback, isOver, tick: () => null,
+    spyView: (g) => { const v = view(g, null); v.spy = true; v.spyHands = g.hand.map((h) => ({ ...h })); v.spyDev = g.names.map((_, s) => g.dev[s].concat(g.devNew[s])); v.vp = g.names.map((_, s) => vp(g, s, true)); return v; },
     botDelay: (g) => (g.phase === 'setup' ? 900 : g.phase === 'main' ? 750 : 900),
   };
   root.ArchipelEngine = { module, HEXES, VERTS, EDGES, RES, RES_NAME, TERRAIN, TERRAIN_NAME, COST, DEV_NAME, PIPS };

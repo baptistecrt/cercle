@@ -37,11 +37,20 @@ S'il recharge la page par erreur, la partie reprend toute seule. Un joueur déco
 Dans les jeux de cartes (coinche, tarot, poker) et à Archipel : bouton **Cacher mes cartes** en bas à droite, ou touche **H**.
 Dans les réglages : « Cacher automatiquement mes cartes quand je quitte la fenêtre ».
 
+## Sur téléphone
+
+Tous les jeux s'adaptent à l'écran d'un téléphone (en mode portrait) : on peut rejoindre une table en ouvrant simplement le lien d'invitation. Au tarot, la main passe sur deux rangées pour rester lisible ; à Capitole, les actions s'affichent sous le plateau (touche une case pour voir sa fiche).
+
+## Regarder une partie (commande /spec)
+
+Pour suivre une partie sans jouer : dans le salon, clique **Regarder sans jouer** (ou rejoins une table déjà lancée), puis tape `/spec` dans la discussion pendant la partie. Un panneau « Vue spectateur » affiche alors les cartes de tout le monde (au poker, elles sont retournées sur la table ; à Archipel, les ressources et cartes développement). Retape `/spec` pour le désactiver.
+La commande ne marche que pour les spectateurs : un joueur assis à la table ne peut pas l'utiliser. À Capitole, tout est déjà visible.
+
 ## Les règles
 
 Chaque jeu a un bouton **Règles** qui explique exactement ce qui est appliqué. En résumé :
 
-- **Coinche** : enchères 80 → 160 puis capot, coinche ×2 et surcoinche ×4, obligations complètes (fournir, monter à l'atout, couper, surcouper, sous-couper ; libre si le partenaire est maître), belote-rebelote, 10 de der, capot 252.
+- **Coinche** : enchères 80 → 160 puis capot, en couleur, **tout atout** ou **sans atout** ; coinche ×2 (possible à tout moment des enchères) et surcoinche ×4 ; obligations complètes (fournir, monter à l'atout, couper, surcouper, sous-couper ; libre si le partenaire est maître) ; belote-rebelote 20 points (**à tout atout, toutes les belotes comptent**, 20 par couleur ; pas de belote à sans atout) ; 10 de der ; capot 252.
 - **Tarot** : règles FFT. Prise, garde, garde sans, garde contre ; chien et écart ; appel au roi à 5 ; excuse ; petit au bout ; poignées ; chelem.
 - **Poker** : blindes qui montent (réglable), relance minimum, tapis, pots annexes, partage en cas d'égalité.
 - **Capitole** : achat ou enchères, loyers doublés sur une couleur complète, construction équilibrée, banque limitée à 32 maisons et 12 hôtels, hypothèques, prison, cartes Hasard / Quartier, échanges entre joueurs, faillite. Option : partie limitée en tours, cagnotte au Jardin des Plantes.

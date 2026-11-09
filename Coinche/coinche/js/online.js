@@ -267,6 +267,14 @@
         case 'chat': {
           const text = String(msg.text || '').trim().slice(0, 240);
           if (!text) return;
+          // Commande cachée : /spec → un spectateur voit les cartes de tout le monde
+          if (/^\/(spec|voir)\b/i.test(text)) {
+            if (!g) return err('La commande /spec marche pendant une partie.');
+            if (p.seat != null) return err('La commande /spec est réservée aux spectateurs : avant la partie, clique « Regarder sans jouer » dans le salon.');
+            p.omni = !p.omni;
+            this.sendTo(token, { t: 'err', msg: p.omni ? 'Vue spectateur activée : tu vois les cartes de tout le monde.' : 'Vue spectateur désactivée.' });
+            break;
+          }
           const m = { pid: p.pid, name: p.name, text, ts: Date.now() };
           this.s.chat.push(m);
           if (this.s.chat.length > 80) this.s.chat.shift();
@@ -326,7 +334,7 @@
       const g = this.s.game;
       return {
         t: 'state', code: this.s.code, me: p.pid, seat: p.seat, isHost: p.isHost,
-        settings: this.s.settings, players, game: g ? E.viewFor(g, p.seat) : null,
+        settings: this.s.settings, players, game: g ? (p.omni && p.seat == null ? spyView(g) : E.viewFor(g, p.seat)) : null,
         chat: this.s.chat.slice(-40), evs,
       };
     }
@@ -355,6 +363,13 @@
       try { this.peer && this.peer.destroy(); } catch (e) { /* */ }
       store.del('coinche-host-' + this.s.code);
     }
+  }
+
+  function spyView(g) {
+    const v = E.viewFor(g, null);
+    v.spy = true;
+    v.allHands = g.hands.map((h) => h.slice());
+    return v;
   }
 
   function cleanName(n) {

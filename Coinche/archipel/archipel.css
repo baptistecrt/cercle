@@ -104,3 +104,23 @@ body.theme-archipel {
   .theme-archipel .r-dock { left: 18px; right: auto; }
   .aprompt { max-width: calc(100% - 20px); white-space: normal; top: auto; bottom: 8px; border-radius: 16px; }
 }
+
+/* ---------- Téléphone ---------- */
+@media (max-width: 640px) {
+  .aroom { padding: 6px 8px 70px; grid-template-rows: 54vh auto auto; }
+  .adice { top: 4px; left: 4px; padding: 5px 8px; }
+  .die { width: 30px; height: 30px; padding: 4px; }
+  .die i { width: 5px; height: 5px; }
+  .adice .sum { font-size: 1.2rem; }
+  .abar { gap: 8px; justify-content: center; }
+  .ahand { gap: 4px; }
+  .rcard { width: 56px; height: 76px; }
+  .rcard svg { width: 28px; height: 28px; }
+  .dcard { width: 56px; height: 76px; }
+  .aacts { margin-left: 0; justify-content: center; width: 100%; }
+  .abtn { min-width: 0; flex: 1 1 22%; padding: 6px 4px; }
+  .abtn.go { flex: 1 1 100%; }
+  .theme-archipel .r-dock { bottom: 8px; }
+  .rpick { gap: 4px; }
+  .rpick .rcard { width: 48px; height: 66px; }
+}

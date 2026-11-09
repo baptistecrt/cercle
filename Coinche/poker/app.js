@@ -46,7 +46,11 @@
   }
   function at(G, k, n, f) {
     const a = (Math.PI / 2) + k * (2 * Math.PI / n);
-    return { x: G.cx + Math.cos(a) * G.rx * f, y: G.cy + Math.sin(a) * G.ry * f };
+    let x = G.cx + Math.cos(a) * G.rx * f;
+    // sur téléphone, on garde les places entièrement dans l'écran
+    const m = window.innerWidth < 640 ? 50 : 70;
+    if (f > 0.9) x = Math.max(m, Math.min(window.innerWidth - m, x));
+    return { x, y: G.cy + Math.sin(a) * G.ry * f };
   }
 
   function render(msg, api) {

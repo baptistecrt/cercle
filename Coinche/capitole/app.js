@@ -50,6 +50,7 @@
           <div id="c-card"></div>
         </div></div><div class="pawns" id="c-pawns"></div></div>
       <aside class="cside">
+        <div class="cpanel-m" id="c-panel2"></div>
         <div class="cinfo" id="c-info"></div>
         <div id="c-trade"></div>
         <div id="c-players"></div>
@@ -65,6 +66,7 @@
     const $ = (s) => document.querySelector(s);
     $('#c-board').addEventListener('click', (e) => { const sq = e.target.closest('.sq'); if (sq) openProp(api, Number(sq.dataset.i)); });
     $('#c-panel').addEventListener('click', (e) => onPanel(e, api));
+    $('#c-panel2').addEventListener('click', (e) => onPanel(e, api));
     $('#c-manage').onclick = () => openManage(api);
     $('#c-tradeb').onclick = () => openTrade(api, null);
     $('#c-trade').addEventListener('click', (e) => { if (e.target.closest('[data-cancel]')) api.act({ type: 'cancelTrade' }); });
@@ -151,7 +153,7 @@
       const v = g.dice[j] || 1;
       d.innerHTML = Array.from({ length: 9 }, (_, i) => `<i class="${PIPS[v].includes(i) ? 'on' : ''}"></i>`).join('');
     });
-    el.style.visibility = g.dice[0] ? 'visible' : 'hidden';
+    el.style.display = g.dice[0] ? '' : 'none';
   }
 
   function renderPanel(g, api) {
@@ -191,12 +193,17 @@
       h = `<p class="cstatus">${g.phase === 'buy' ? name(t) + ' hésite à acheter ' + esc(B[g.pos[t]].name) + '…' : g.phase === 'end' ? name(t) + ' termine son tour…' : g.inJail[t] ? name(t) + ' tente de sortir de prison…' : 'À ' + name(t) + ' de lancer les dés'}</p>`;
     }
     if (el.dataset.h !== h) { el.dataset.h = h; el.innerHTML = h; }
+    // copie du panneau sous le plateau (affichée seulement sur téléphone)
+    const el2 = document.getElementById('c-panel2');
+    const h2 = h.replace('id="c-bidv"', 'id="c-bidv2"');
+    if (el2.dataset.h !== h2) { el2.dataset.h = h2; el2.innerHTML = h2; }
   }
   function onPanel(e, api) {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.info) { openProp(api, Number(b.dataset.sq)); return; }
     if (b.dataset.bid) {
-      const v = b.dataset.bid === 'custom' ? Number(document.getElementById('c-bidv').value) : Number(b.dataset.bid);
+      const inp = b.closest('#c-panel2') ? document.getElementById('c-bidv2') : document.getElementById('c-bidv');
+      const v = b.dataset.bid === 'custom' ? Number(inp.value) : Number(b.dataset.bid);
       if (v) api.act({ type: 'bid', amount: v });
       return;
     }

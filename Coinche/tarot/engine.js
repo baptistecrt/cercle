@@ -535,6 +535,7 @@
     defaultSettings: { tours: 2 },
     settingsUI: [{ key: 'tours', label: 'Longueur de la partie', options: [{ value: 1, label: '1 tour de table' }, { value: 2, label: '2 tours de table' }, { value: 3, label: '3 tours de table' }, { value: 5, label: '5 tours de table' }] }],
     create, apply, view, waiting, tick, bot, fallback, isOver,
+    spyView: (g) => { const v = view(g, null); v.spy = true; v.allHands = g.hands.map((h) => h.slice()); v.spyChien = g.chien.slice(); v.spyEcart = g.ecart.slice(); v.spyPartner = g.partner; return v; },
     botDelay: (g) => (g.phase === 'playing' ? 700 : g.phase === 'dealEnd' ? 300 : 1000),
   };
   const api = { module, legalCards, winnerIndex, halfPoints, cardLabel, isTrump, isOudler, rankOf, suitOf, deck, LEVELS, MULT, REQUIRED, POIGNEE, POIGNEE_NAME, POIGNEE_BONUS, HAND, CHIEN, SUIT_NAME, SUIT_SYM };

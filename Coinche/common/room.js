@@ -103,6 +103,7 @@
         </div>
         <p id="r-gwait" class="r-dim" hidden>L'hôte lancera la partie quand tout le monde sera assis.</p>
         <div><p class="r-dim r-mb">En attente d'une place</p><ul id="r-spec" class="r-spec"></ul></div>
+        <button id="r-stand" class="r-link" hidden>Regarder sans jouer</button>
         <button id="r-leave" class="r-link">Quitter la table</button>
       </aside>
     </div>
@@ -122,6 +123,7 @@
   </div>
   ${cfg.hideable ? `<button class="r-hide" id="r-hide" title="Cacher mes cartes (touche H)">${ICON.eye}<span id="r-hidel">Cacher mes cartes</span><kbd>H</kbd></button>` : ''}
   <p class="r-banner" id="r-banner" hidden></p>
+  <div class="r-spy" id="r-spy" hidden><button class="r-spy-h" id="r-spyh"><span>Vue spectateur</span><small>toutes les cartes</small><i>▾</i></button><div class="r-spy-b" id="r-spyb"></div></div>
 </section>
 <div class="r-modal" id="rm-rules" hidden><div class="r-sheet r-paper r-rules"><button class="r-close" data-rclose>&times;</button><h2>Règles — ${esc(cfg.title)}</h2>${cfg.rulesHtml || ''}</div></div>
 <div class="r-modal" id="rm-set" hidden><div class="r-sheet r-paper">
@@ -156,6 +158,15 @@
       setHidden: (v) => setHidden(v),
       msg: () => app.msg,
       rerender: () => { if (app.msg && app.msg.game) cfg.render(app.msg, api); },
+      // Panneau « vue spectateur » (commande /spec)
+      spy: (html) => {
+        const box = $('#r-spy');
+        if (html == null) { box.hidden = true; return; }
+        if (box.hidden) box.classList.toggle('open', window.innerWidth > 640);
+        box.hidden = false;
+        const b = $('#r-spyb');
+        if (b.dataset.h !== html) { b.dataset.h = html; b.innerHTML = html; }
+      },
     };
 
     // ---------- Liens ----------
@@ -169,7 +180,7 @@
 
     function startHost(code, saved, offline) {
       app.isHost = true; app.code = code;
-      app.link = new RoomHost({ module: M, code, name: identity.name, token: identity.token, saved, offline, onLocal: onState, onStatus: setStatus });
+      app.link = new RoomHost({ module: M, code, name: identity.name, token: identity.token, saved, offline, onLocal: (m) => { if (m.t === 'state') onState(m); else if (m.t === 'err') toast(m.msg); }, onStatus: setStatus });
       app.send = (m) => app.link.handle(identity.token, m);
       store.set(SESSION_KEY, { role: 'host', code, at: Date.now(), offline: !!offline });
       setUrlRoom(offline ? null : code);
@@ -235,7 +246,14 @@
       const wasTurn = !!(prev && prev.game && prev.game.waiting && prev.gseat != null && prev.game.waiting.includes(prev.gseat));
       if (myTurn && !wasTurn) Sound.play('turn');
       document.title = (myTurn && document.hidden ? '● À toi — ' : '') + cfg.title + ' entre potes';
-      if (msg.game) { show('r-game'); try { cfg.render(msg, api); } catch (e) { console.error(e); } }
+      if (msg.game) {
+        show('r-game');
+        if ($('#r-hide')) $('#r-hide').hidden = msg.gseat == null;
+        try { cfg.render(msg, api); } catch (e) { console.error(e); }
+        if (!msg.game.spy) api.spy(null);
+        else if (!cfg.spyRows) { const first = $('#r-spy').hidden; api.spy('<p class="r-spy-note">Toutes les cartes sont visibles sur la table.</p>'); if (first) $('#r-spy').classList.remove('open'); }
+        else { try { api.spy(cfg.spyRows(msg.game, api)); } catch (e) { console.error(e); } }
+      }
       else { show('r-lobby'); renderLobby(); }
       renderChat();
     }
@@ -262,6 +280,8 @@
       st.textContent = n < M.minPlayers ? 'Il faut au moins ' + M.minPlayers + ' joueurs' : 'Lancer la partie à ' + n;
       $('#r-addbot').disabled = n >= M.maxPlayers;
       $('#r-settings').innerHTML = (M.settingsUI || []).map((d) => `<label class="r-field r-inline"><span>${esc(d.label)}</span><select data-key="${d.key}">${d.options.map((o) => `<option value="${esc(o.value)}"${String(m.settings[d.key]) === String(o.value) ? ' selected' : ''}>${esc(o.label)}</option>`).join('')}</select></label>`).join('');
+      const meP = players().find((x) => x.pid === m.me);
+      $('#r-stand').hidden = !(meP && meP.seat != null);
       const spec = players().filter((p) => p.seat == null);
       $('#r-spec').innerHTML = spec.length ? spec.map((p) => '<li>' + esc(p.name) + (p.pid === m.me ? ' (toi)' : '') + '</li>').join('') : '<li class="none">Personne</li>';
     }
@@ -276,6 +296,8 @@
     $('#r-addbot').onclick = () => send({ t: 'addBot' });
     $('#r-start').onclick = () => send({ t: 'start' });
     $('#r-leave').onclick = leave;
+    $('#r-stand').onclick = () => send({ t: 'stand' });
+    $('#r-spyh').onclick = () => $('#r-spy').classList.toggle('open');
     $('#r-copy').onclick = async () => {
       const url = inviteUrl(app.msg.code);
       try { await navigator.clipboard.writeText(url); toast('Lien copié ! Envoie-le à tes potes.'); }

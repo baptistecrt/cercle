@@ -228,6 +228,15 @@
         case 'chat': {
           const text = String(msg.text || '').trim().slice(0, 240);
           if (!text) return;
+          // Commande cachée : /spec → un spectateur voit les cartes de tout le monde
+          if (/^\/(spec|voir)\b/i.test(text)) {
+            if (!g) return err('La commande /spec marche pendant une partie.');
+            if (p.gseat != null) return err('La commande /spec est réservée aux spectateurs : avant la partie, clique « Regarder sans jouer » dans le salon.');
+            if (!this.M.spyView) return err('Rien n\'est caché dans ce jeu : tu vois déjà tout.');
+            p.omni = !p.omni;
+            this.sendTo(token, { t: 'err', msg: p.omni ? 'Vue spectateur activée : tu vois les cartes de tout le monde.' : 'Vue spectateur désactivée.' });
+            break;
+          }
           this.s.chat.push({ pid: p.pid, name: p.name, text, ts: Date.now() });
           if (this.s.chat.length > 80) this.s.chat.shift();
           this.event({ type: 'chat', pid: p.pid, text });
@@ -280,7 +289,7 @@
     }
     viewFor(p, players, evs) {
       const g = this.s.game;
-      return { t: 'state', code: this.s.code, me: p.pid, seat: p.seat, gseat: p.gseat, isHost: p.isHost, settings: this.s.settings, players, game: g ? this.M.view(g, p.gseat) : null, chat: this.s.chat.slice(-40), evs };
+      return { t: 'state', code: this.s.code, me: p.pid, seat: p.seat, gseat: p.gseat, isHost: p.isHost, settings: this.s.settings, players, game: g ? (p.omni && p.gseat == null && this.M.spyView ? this.M.spyView(g) : this.M.view(g, p.gseat)) : null, chat: this.s.chat.slice(-40), evs };
     }
     sendTo(token, msg) {
       if (token === this.s.hostToken) { this.onLocal(JSON.parse(JSON.stringify(msg))); return; }

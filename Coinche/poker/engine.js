@@ -360,6 +360,7 @@
       { key: 'every', label: 'Les blindes montent', options: [{ value: 6, label: 'toutes les 6 mains' }, { value: 10, label: 'toutes les 10 mains' }, { value: 15, label: 'toutes les 15 mains' }, { value: 0, label: 'jamais' }] },
     ],
     create, apply, view, waiting, tick, bot, fallback, isOver,
+    spyView: (g) => { const v = view(g, null); v.spy = true; v.holes = g.holes.map((h) => (h ? h.slice() : null)); return v; },
     botDelay: () => 1100,
   };
   root.PokerEngine = { module, best7, eval5, handName, deck, BLINDS, CAT };

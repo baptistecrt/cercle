@@ -107,7 +107,7 @@
     app.code = code;
     app.link = new Host({
       code, name: identity.name, token: identity.token, saved, offline,
-      onLocal: onState, onStatus: setStatus,
+      onLocal: (m) => { if (m.t === 'state') onState(m); else if (m.t === 'err') toast(m.msg); }, onStatus: setStatus,
     });
     app.send = (m) => app.link.handle(identity.token, m);
     store.set('coinche-session', { role: 'host', code, at: Date.now() });
@@ -241,6 +241,8 @@
     $('#tl-0').textContent = 'Équipe 1 — ' + (playerAt(0) || playerAt(2) ? [nameAt(0), nameAt(2)].join(' & ') : 'places libres');
     $('#tl-1').textContent = 'Équipe 2 — ' + (playerAt(1) || playerAt(3) ? [nameAt(1), nameAt(3)].join(' & ') : 'places libres');
     $('#host-controls').hidden = !m.isHost;
+    const meP = players().find((p) => p.pid === m.me);
+    $('#btn-stand').hidden = !(meP && meP.seat != null);
     $('#guest-wait').hidden = m.isHost;
     const full = [0, 1, 2, 3].every((s) => playerAt(s));
     $('#btn-start').disabled = !full;
@@ -265,6 +267,8 @@
   $('#sel-tasa').onchange = (e) => send({ t: 'settings', taSa: e.target.value === '1' });
   $('#sel-anytime').onchange = (e) => send({ t: 'settings', coincheAnytime: e.target.value === '1' });
   $('#btn-leave').onclick = leave;
+  $('#btn-stand').onclick = () => send({ t: 'stand' });
+  $('#spy-h').onclick = () => $('#spy').classList.toggle('open');
   $('#btn-copy').onclick = async () => {
     const url = inviteUrl(app.msg.code);
     try { await navigator.clipboard.writeText(url); toast('Lien copié ! Envoie-le à tes potes.'); }
@@ -287,9 +291,23 @@
     renderHand(g);
     renderCenter(g);
     renderModals(g);
+    renderSpy(g);
     const spect = m.seat == null;
     $('#hide-btn').hidden = spect;
     $('#t-last').disabled = !g.lastTrick;
+  }
+
+  // Vue spectateur (/spec) : les mains de tout le monde
+  function renderSpy(g) {
+    const box = $('#spy');
+    if (!g.spy || !g.allHands) { box.hidden = true; return; }
+    if (box.hidden) box.classList.toggle('open', window.innerWidth > 640);
+    box.hidden = false;
+    const trump = g.contract && g.phase !== 'bidding' ? g.contract.suit : null;
+    const h = [0, 1, 2, 3].map((s) => '<div class="sp-row"><b>' + esc(nameAt(s)) + ' <span class="sp-team t' + (s % 2) + '">Équipe ' + (s % 2 + 1) + '</span></b><div class="sp-cards">' +
+      sortHand(g.allHands[s], trump).map((c) => '<span class="mc" title="' + esc(E.cardLabel(c)) + '"><img src="../common/cards/' + c + '.svg" alt=""></span>').join('') + '</div></div>').join('');
+    const b = $('#spy-b');
+    if (b.dataset.h !== h) { b.dataset.h = h; b.innerHTML = h; }
   }
 
   function renderSlate(g) {

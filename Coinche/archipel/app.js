@@ -350,6 +350,18 @@
     else if (ev.type === 'prod' && g.mine != null && ev.gains[g.mine] && RES.some((r) => ev.gains[g.mine][r])) S.play('coin');
   }
 
+  // Vue spectateur (/spec) : ressources et cartes développement de chacun
+  function spyRows(g) {
+    let h = '';
+    for (let s = 0; s < g.n; s++) {
+      const hand = g.spyHands[s], dev = g.spyDev[s];
+      h += '<div class="sp-row"><b>' + esc(g.names[s]) + ' <span class="tag">' + g.vp[s] + ' pts</span></b><div class="sp-res">' +
+        RES.map((r) => '<i style="--c:' + RCOL[r] + '">' + RES_NAME[r] + ' ' + hand[r] + '</i>').join('') + '</div>' +
+        (dev.length ? '<div class="sp-res">' + dev.map((c) => '<i style="--c:' + (c === 'vp' ? '#9a7420' : '#4b3378') + '">' + esc(DEV_NAME[c]) + '</i>').join('') + '</div>' : '') + '</div>';
+    }
+    return h;
+  }
+
   const hero = `<svg viewBox="0 0 230 150" aria-hidden="true"><defs><polygon id="hh" points="0,-30 26,-15 26,15 0,30 -26,15 -26,-15" stroke="#f1e2bb" stroke-width="3"/></defs>
     <use href="#hh" x="89" y="36" fill="#3a8a45"/><use href="#hh" x="141" y="36" fill="#ecc54e"/><use href="#hh" x="63" y="81" fill="#c9653b"/><use href="#hh" x="115" y="81" fill="#e8dab0"/><use href="#hh" x="167" y="81" fill="#9fd060"/><use href="#hh" x="89" y="126" fill="#9aa3ab"/><use href="#hh" x="141" y="126" fill="#3a8a45"/>
     <circle cx="141" cy="36" r="11" fill="#f6efe0"/><text x="141" y="41" text-anchor="middle" font-family="Georgia" font-weight="700" font-size="14" fill="#b42a22">6</text>
@@ -368,7 +380,7 @@
   window.SalleRoom.start({
     module: A.module, title: 'Archipel', prefix: 'A', themeClass: 'theme-archipel', hideable: true, soloPlayers: 4,
     tagline: 'Colonise l\'île, échange tes ressources, bâtis villes et routes. Les règles de Catan.',
-    hero, rulesHtml: rules, render, onEvent,
+    hero, rulesHtml: rules, render, onEvent, spyRows,
     lobbyNote: '3 ou 4 joueurs.',
   });
 })();
