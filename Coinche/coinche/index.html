@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Coinche entre potes</title>
+<meta name="description" content="Belote coinchée en ligne entre amis : chacun son écran, chacun ses cartes.">
+<meta name="theme-color" content="#3b0d16">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='10' y='4' width='44' height='56' rx='6' fill='%23f6efe0' stroke='%23c9a44c' stroke-width='3'/%3E%3Cpath d='M32 18c-6 8-14 12-14 19a7 7 0 0 0 12 4l-3 9h10l-3-9a7 7 0 0 0 12-4c0-7-8-11-14-19z' fill='%237a1626'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============ ACCUEIL ============ -->
+<section id="home" class="screen">
+  <a class="home-back" href="../">← Tous les jeux</a>
+  <div class="home-inner">
+    <div class="home-hero" aria-hidden="true">
+      <div class="hero-fan">
+        <img src="../common/cards/JH.svg" alt=""><img src="../common/cards/9H.svg" alt=""><img src="../common/cards/AH.svg" alt=""><img src="../common/cards/TH.svg" alt=""><img src="../common/cards/KH.svg" alt="">
+      </div>
+    </div>
+    <h1 class="home-title">Coinche</h1>
+    <p class="home-sub">La belote coinchée entre potes. Chacun sur son écran, chacun ses cartes.</p>
+
+    <form id="home-form" class="home-form" autocomplete="off">
+      <label class="field">
+        <span>Ton pseudo</span>
+        <input id="in-name" maxlength="18" placeholder="Ex. Baptiste" required>
+      </label>
+      <div class="home-actions">
+        <button type="button" id="btn-create" class="btn btn-brass">Créer une table</button>
+        <div class="join-row">
+          <input id="in-code" maxlength="5" placeholder="CODE" aria-label="Code de la table" spellcheck="false">
+          <button type="button" id="btn-join" class="btn btn-ghost">Rejoindre</button>
+        </div>
+      </div>
+      <button type="button" id="btn-solo" class="link-btn">Jouer seul contre des robots</button>
+      <p id="home-msg" class="home-msg" role="status"></p>
+    </form>
+  </div>
+  <button class="link-btn home-rules" data-open="rules">Règles du jeu</button>
+</section>
+
+<!-- ============ SALON ============ -->
+<section id="lobby" class="screen" hidden>
+  <header class="lobby-head">
+    <div>
+      <p class="lobby-label">Code de la table</p>
+      <p id="lobby-code" class="lobby-code">-----</p>
+    </div>
+    <div class="lobby-share">
+      <button id="btn-copy" class="btn btn-brass">Copier le lien d'invitation</button>
+      <p id="net-status" class="net-status"></p>
+    </div>
+  </header>
+
+  <div class="lobby-body">
+    <div class="lobby-table">
+      <div class="mini-felt">
+        <div class="mini-center">
+          <p>Les partenaires sont assis face à face</p>
+        </div>
+        <div class="seat-slot" data-seat="2"></div>
+        <div class="seat-slot" data-seat="1"></div>
+        <div class="seat-slot" data-seat="3"></div>
+        <div class="seat-slot" data-seat="0"></div>
+      </div>
+    </div>
+
+    <aside class="lobby-side">
+      <div class="team-legend">
+        <div class="tl tl-0"><span class="dot"></span><b id="tl-0">Équipe 1</b></div>
+        <div class="tl tl-1"><span class="dot"></span><b id="tl-1">Équipe 2</b></div>
+      </div>
+      <p class="lobby-hint">Clique sur une place libre pour t'asseoir et choisir ton équipe.</p>
+
+      <div id="host-controls" class="host-controls">
+        <button id="btn-random" class="btn btn-ghost">Équipes au hasard</button>
+        <label class="field field-inline">
+          <span>Partie en</span>
+          <select id="sel-target">
+            <option value="500">500 points</option>
+            <option value="1000" selected>1000 points</option>
+            <option value="1500">1500 points</option>
+            <option value="2000">2000 points</option>
+            <option value="3000">3000 points</option>
+          </select>
+        </label>
+        <label class="field field-inline">
+          <span>Annonces</span>
+          <select id="sel-tasa">
+            <option value="1" selected>Couleurs + tout atout + sans atout</option>
+            <option value="0">Couleurs seulement</option>
+          </select>
+        </label>
+        <label class="field field-inline">
+          <span>Coinche</span>
+          <select id="sel-anytime">
+            <option value="1" selected>À tout moment</option>
+            <option value="0">Seulement à son tour</option>
+          </select>
+        </label>
+        <button id="btn-start" class="btn btn-brass btn-big">Lancer la partie</button>
+      </div>
+      <p id="guest-wait" class="guest-wait" hidden>L'hôte lancera la partie dès que les 4 places sont prises.</p>
+
+      <div class="spectators">
+        <p class="spec-title">En attente d'une place</p>
+        <ul id="spec-list"></ul>
+      </div>
+      <button id="btn-leave" class="link-btn">Quitter la table</button>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ TABLE DE JEU ============ -->
+<section id="game" class="screen" hidden>
+  <div class="felt" id="felt">
+    <div class="felt-stitch"></div>
+
+    <!-- Ardoise des scores -->
+    <button class="slate" id="slate" title="Feuille de marque">
+      <span class="slate-frame"></span>
+      <span class="slate-row"><span class="chalk-name" id="sl-n0">Nous</span><span class="chalk-num" id="sl-s0">0</span></span>
+      <span class="slate-row"><span class="chalk-name" id="sl-n1">Eux</span><span class="chalk-num" id="sl-s1">0</span></span>
+      <span class="slate-target" id="sl-target">en 1000</span>
+    </button>
+
+    <!-- Plaque du contrat -->
+    <div class="plaque" id="plaque" hidden>
+      <span class="plaque-label">Contrat</span>
+      <span class="plaque-bid" id="pl-bid">—</span>
+      <span class="plaque-by" id="pl-by"></span>
+      <span class="plaque-coinche" id="pl-coinche" hidden></span>
+      <span class="plaque-tricks" id="pl-tricks"></span>
+    </div>
+
+    <!-- Outils -->
+    <nav class="tools" aria-label="Outils">
+      <button class="tool" id="t-last" title="Dernier pli"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.7M4 4v4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Dernier pli</span></button>
+      <button class="tool" id="t-sheet" title="Feuille de marque"><svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6zM9 9h6M9 13h6M9 17h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Marque</span></button>
+      <button class="tool" data-open="rules" title="Règles"><svg viewBox="0 0 24 24"><path d="M12 17h.01M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Règles</span></button>
+      <button class="tool" id="t-settings" title="Réglages"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Réglages</span></button>
+    </nav>
+
+    <!-- Joueurs -->
+    <div class="seat seat-top" data-pos="2"></div>
+    <div class="seat seat-left" data-pos="3"></div>
+    <div class="seat seat-right" data-pos="1"></div>
+    <div class="seat seat-bottom" data-pos="0"></div>
+
+    <div class="backs backs-top" data-pos="2"></div>
+    <div class="backs backs-left" data-pos="3"></div>
+    <div class="backs backs-right" data-pos="1"></div>
+
+    <!-- Pli -->
+    <div class="trick" id="trick"></div>
+    <p class="center-msg" id="center-msg"></p>
+
+    <!-- Enchères -->
+    <div class="bidbox" id="bidbox" hidden>
+      <p class="bid-title" id="bid-title">À toi de parler</p>
+      <div class="bid-values" id="bid-values"></div>
+      <div class="bid-suits" id="bid-suits"></div>
+      <div class="bid-actions">
+        <button class="btn btn-ghost" id="b-pass">Passer</button>
+        <button class="btn btn-red" id="b-coinche" hidden>Coinche !</button>
+        <button class="btn btn-red" id="b-surcoinche" hidden>Surcoinche !</button>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div class="hand-zone">
+      <div class="hand" id="hand"></div>
+      <button class="hide-veil" id="hide-veil" hidden>
+        <span class="veil-eye"><svg viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 6.1A9.6 9.6 0 0 1 12 6c5 0 9 6 9 6a17 17 0 0 1-2.6 3.2M6.5 7.6C4.3 9.2 3 12 3 12s4 6 9 6c1.4 0 2.7-.4 3.8-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+        <span>Cartes cachées — clique ou appuie sur <kbd>H</kbd> pour les voir</span>
+      </button>
+    </div>
+    <button class="hide-btn" id="hide-btn" title="Cacher mes cartes (touche H)">
+      <svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      <span id="hide-label">Cacher mes cartes</span><kbd>H</kbd>
+    </button>
+    <p class="turn-pill" id="turn-pill" hidden>À toi de jouer</p>
+    <button class="coinche-now" id="coinche-now" hidden>Coinche !</button>
+
+    <!-- Discussion -->
+    <div class="chat" id="chat">
+      <button class="chat-toggle" id="chat-toggle"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span>Discuter</span><b class="chat-badge" id="chat-badge" hidden>0</b></button>
+      <div class="chat-panel" id="chat-panel" hidden>
+        <ul class="chat-log" id="chat-log"></ul>
+        <div class="chat-quick">
+          <button data-q="Bien joué !">Bien joué !</button><button data-q="Aïe…">Aïe…</button><button data-q="Allez on y croit">On y croit</button><button data-q="😂">😂</button><button data-q="🔥">🔥</button>
+        </div>
+        <form class="chat-form" id="chat-form"><input id="chat-in" maxlength="240" placeholder="Écrire un message…" autocomplete="off"><button class="btn btn-brass">Envoyer</button></form>
+      </div>
+    </div>
+
+    <p class="conn-banner" id="conn-banner" hidden></p>
+  </div>
+</section>
+
+<!-- ============ FENÊTRES ============ -->
+<div class="modal" id="m-round" hidden>
+  <div class="sheet paper">
+    <h2 id="r-title">Contrat réussi</h2>
+    <p class="r-contract" id="r-contract"></p>
+    <table class="r-table" id="r-table"></table>
+    <div class="r-foot">
+      <p id="r-ready" class="r-ready"></p>
+      <button class="btn btn-brass btn-big" id="r-next">Donne suivante</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="m-end" hidden>
+  <div class="sheet paper end-sheet">
+    <p class="end-kicker">Partie terminée</p>
+    <h2 id="e-title">Victoire</h2>
+    <p class="end-score" id="e-score"></p>
+    <div class="r-foot">
+      <button class="btn btn-ghost-dark" id="e-sheet">Voir la marque</button>
+      <button class="btn btn-ghost-dark" id="e-lobby" hidden>Retour au salon</button>
+      <button class="btn btn-brass btn-big" id="e-again" hidden>Nouvelle partie</button>
+      <p class="r-ready" id="e-wait">L'hôte peut relancer une partie.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="m-sheet" hidden>
+  <div class="sheet slate-sheet">
+    <button class="close" data-close>&times;</button>
+    <h2>La marque</h2>
+    <div class="sheet-scroll"><table class="score-table" id="score-table"></table></div>
+  </div>
+</div>
+
+<div class="modal" id="m-last" hidden>
+  <div class="sheet paper">
+    <button class="close dark" data-close>&times;</button>
+    <h2>Dernier pli</h2>
+    <div class="last-trick" id="last-trick"></div>
+    <p class="r-ready" id="last-who"></p>
+  </div>
+</div>
+
+<div class="modal" id="m-settings" hidden>
+  <div class="sheet paper">
+    <button class="close dark" data-close>&times;</button>
+    <h2>Réglages</h2>
+    <label class="check"><input type="checkbox" id="opt-autohide"> Cacher automatiquement mes cartes quand je quitte la fenêtre</label>
+    <label class="check"><input type="checkbox" id="opt-sound"> Sons</label>
+    <label class="check"><input type="checkbox" id="opt-confirm"> Double-clic pour jouer une carte (évite les erreurs)</label>
+    <div id="host-tools" class="host-tools" hidden>
+      <p class="ht-title">Outils de l'hôte</p>
+      <div id="takeover-list"></div>
+      <button class="btn btn-ghost-dark" id="opt-lobby">Arrêter la partie et revenir au salon</button>
+    </div>
+    <button class="btn btn-ghost-dark" id="opt-quit">Quitter la table</button>
+  </div>
+</div>
+
+<div class="modal" id="m-rules" hidden>
+  <div class="sheet paper rules">
+    <button class="close dark" data-close>&times;</button>
+    <h2>Les règles de la coinche</h2>
+    <div class="rules-body">
+      <h3>Équipes et cartes</h3>
+      <p>4 joueurs, 2 équipes : les partenaires sont assis face à face. Jeu de 32 cartes, 8 cartes chacun (distribuées 3-2-3). On joue dans le sens inverse des aiguilles d'une montre : c'est le joueur à ta droite qui joue après toi.</p>
+      <h3>Valeur des cartes</h3>
+      <table class="val-table">
+        <tr><th></th><th>V</th><th>9</th><th>As</th><th>10</th><th>R</th><th>D</th><th>8</th><th>7</th></tr>
+        <tr><td>Atout</td><td>20</td><td>14</td><td>11</td><td>10</td><td>4</td><td>3</td><td>0</td><td>0</td></tr>
+        <tr><th></th><th>As</th><th>10</th><th>R</th><th>D</th><th>V</th><th>9</th><th>8</th><th>7</th></tr>
+        <tr><td>Autres</td><td>11</td><td>10</td><td>4</td><td>3</td><td>2</td><td>0</td><td>0</td><td>0</td></tr>
+      </table>
+      <p>Total : 152 points + 10 de der (dernier pli) = 162. Belote-rebelote (Roi + Dame d'atout dans la même main) : 20 points, annoncés automatiquement.</p>
+      <h3>Enchères</h3>
+      <p>À partir du joueur à droite du donneur, chacun annonce un contrat (80, 90… 160, ou Capot = faire tous les plis) avec une couleur d'atout, ou passe. Chaque annonce doit être plus haute que la précédente. Les enchères s'arrêtent après 3 « passe » consécutifs. Si tout le monde passe, on redistribue.</p>
+      <p>Un adversaire du preneur peut <b>coincher</b> (points doublés). Les enchères sont alors closes, mais l'équipe du preneur peut <b>surcoincher</b> (points quadruplés).</p>
+      <p>Par défaut, on peut coincher <b>à tout moment</b> pendant les enchères, même quand ce n'est pas son tour : un bouton « Coinche ! » (ou la touche <kbd>C</kbd>) apparaît dès qu'un adversaire a annoncé. Après une coinche, les deux preneurs peuvent surcoincher de la même façon. L'hôte peut revenir à la règle « seulement à son tour » dans le salon.</p>
+      <h3>Tout atout et sans atout</h3>
+      <p>On peut aussi annoncer <b>tout atout</b> (toutes les couleurs sont atout) ou <b>sans atout</b> (aucun atout). Les barèmes changent pour que la donne vaille toujours 162 points avec le 10 de der :</p>
+      <table class="val-table">
+        <tr><th></th><th>V</th><th>9</th><th>As</th><th>10</th><th>R</th><th>D</th><th>8</th><th>7</th></tr>
+        <tr><td>Tout atout</td><td>14</td><td>9</td><td>6</td><td>5</td><td>3</td><td>1</td><td>0</td><td>0</td></tr>
+        <tr><th></th><th>As</th><th>10</th><th>R</th><th>D</th><th>V</th><th>9</th><th>8</th><th>7</th></tr>
+        <tr><td>Sans atout</td><td>19</td><td>10</td><td>4</td><td>3</td><td>2</td><td>0</td><td>0</td><td>0</td></tr>
+      </table>
+      <p>À tout atout, chaque couleur se joue comme l'atout (Valet, 9, As, 10, Roi, Dame, 8, 7) : il faut fournir et monter si on peut ; sans la couleur, on se défausse. À sans atout, l'ordre est As, 10, Roi, Dame, Valet, 9, 8, 7 : il faut fournir, sans obligation de monter. Pas de belote-rebelote dans ces deux contrats. Le décompte, la coinche et le capot fonctionnent comme d'habitude. L'hôte peut désactiver ces annonces dans le salon.</p>
+      <h3>Jeu de la carte</h3>
+      <p>Il faut toujours fournir à la couleur demandée. À l'atout, il faut monter si on peut (même sur son partenaire). Si on n'a pas la couleur : si le partenaire est maître, on joue ce qu'on veut ; sinon il faut couper, surcouper si un adversaire a déjà coupé, et sous-couper si on ne peut pas monter. Sans atout, on se défausse.</p>
+      <h3>Décompte</h3>
+      <p>Le contrat est réussi si l'équipe du preneur fait au moins le montant annoncé et plus que la défense (belote comprise). Capot : 252 points pour l'équipe qui fait tous les plis.</p>
+      <ul>
+        <li><b>Réussi</b> : le preneur marque contrat + ses points, la défense marque ses points.</li>
+        <li><b>Chuté (dedans)</b> : le preneur marque 0, la défense marque 160 + contrat.</li>
+        <li><b>Coinché / surcoinché</b> : l'équipe gagnante marque 160 + contrat × 2 (ou × 4), l'autre 0.</li>
+        <li>La belote reste toujours acquise à l'équipe qui l'a.</li>
+      </ul>
+      <p>La première équipe à atteindre l'objectif (1000 points par défaut) en fin de donne gagne.</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="../common/vendor/peerjs.min.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/bot.js"></script>
+<script src="js/online.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
