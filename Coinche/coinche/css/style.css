@@ -648,3 +648,5 @@ html, body { touch-action: manipulation; -webkit-text-size-adjust: 100%; }
 .pk-cards img { width: 38px; margin-left: -10px; border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,.5); }
 .slate { -webkit-touch-callout: none; user-select: none; }
 @media (max-width: 640px) { .pk-cards img { width: 30px; margin-left: -9px; } }
+
+.version { margin: 14px 0 0; font-size: .78rem; color: #8a7a6a; text-align: right; }
