@@ -28,8 +28,9 @@
   const TA_PTS = { J: 14, '9': 9, A: 6, T: 5, K: 3, Q: 1, '8': 0, '7': 0 };
   const SA_PTS = { A: 19, T: 10, K: 4, Q: 3, J: 2, '9': 0, '8': 0, '7': 0 };
 
-  const BID_VALUES = [80, 90, 100, 110, 120, 130, 140, 150, 160, 250]; // 250 = Capot
+  const BID_VALUES = [80, 90, 100, 110, 120, 130, 140, 150, 160, 250, 500]; // 250 = Capot, 500 = Générale
   const CAPOT = 250;
+  const GENERALE = 500; // le preneur fait les 8 plis à lui seul
   const CAPOT_POINTS = 252; // points d'un capot (162 + 90)
   const BELOTE_PTS = 20;
   const DIX_DE_DER = 10;
@@ -53,7 +54,7 @@
     return RANK_NAME[rankOf(card)] + ' de ' + SUIT_INFO[suitOf(card)].name.toLowerCase();
   }
   function bidLabel(value, suit) {
-    const v = value === CAPOT ? 'Capot' : String(value);
+    const v = value === CAPOT ? 'Capot' : value === GENERALE ? 'Générale' : String(value);
     if (suit === 'TA' || suit === 'SA') return v + ' ' + SUIT_INFO[suit].name.toLowerCase();
     return suit ? v + ' ' + SUIT_INFO[suit].sym : v;
   }
@@ -175,17 +176,41 @@
     };
   }
 
-  function startRound(g) {
+  /** Donne arrangée : `seat` reçoit un très gros jeu, son partenaire de quoi l'aider (sans capot assuré) */
+  function strongDeal(seat) {
+    const trump = SUITS[randInt(4)];
+    const sides = shuffle(SUITS.filter((x) => x !== trump));
+    const hands = [[], [], [], []];
+    const pool = new Set(newDeck());
+    const give = (s, c) => { pool.delete(c); hands[s].push(c); };
+    const partner = partnerOf(seat);
+    // Le preneur : valet, 9, as d'atout + un petit atout, as-10 d'une couleur, as d'une autre
+    for (const c of ['J', '9', 'A', ['7', '8', 'Q'][randInt(3)]].map((r) => r + trump)) give(seat, c);
+    give(seat, 'A' + sides[0]); give(seat, 'T' + sides[0]); give(seat, 'A' + sides[1]);
+    // Le partenaire : le 10 d'atout et le dernier as
+    give(partner, 'T' + trump); give(partner, 'A' + sides[2]);
+    // Le reste au hasard
+    const rest = shuffle([...pool]);
+    const slots = [];
+    for (let s = 0; s < 4; s++) for (let i = hands[s].length; i < 8; i++) slots.push(s);
+    shuffle(slots).forEach((s, i) => hands[s].push(rest[i]));
+    return hands;
+  }
+
+  function startRound(g, rigSeat) {
     g.round += 1;
     g.dealer = g.round === 1 ? g.dealer : nextSeat(g.dealer);
-    const deck = shuffle(newDeck());
-    g.hands = [[], [], [], []];
-    // Distribution 3-2-3 en commençant à droite du donneur
-    let k = 0;
-    for (const n of [3, 2, 3]) {
-      for (let i = 1; i <= 4; i++) {
-        const s = (g.dealer + i) % 4;
-        for (let j = 0; j < n; j++) g.hands[s].push(deck[k++]);
+    if (rigSeat != null && rigSeat >= 0 && rigSeat < 4) g.hands = strongDeal(rigSeat);
+    else {
+      const deck = shuffle(newDeck());
+      g.hands = [[], [], [], []];
+      // Distribution 3-2-3 en commençant à droite du donneur
+      let k = 0;
+      for (const n of [3, 2, 3]) {
+        for (let i = 1; i <= 4; i++) {
+          const s = (g.dealer + i) % 4;
+          for (let j = 0; j < n; j++) g.hands[s].push(deck[k++]);
+        }
       }
     }
     g.bids = [];
@@ -200,6 +225,7 @@
     g.trickWinner = null;
     g.leader = null;
     g.tricksPlayed = 0;
+    g.trickSeats = [];
     g.wonCards = [[], []];
     g.tricksWon = [0, 0];
     g.lastTrick = null;
@@ -233,7 +259,8 @@
 
   function beginPlay(g, events) {
     g.phase = 'playing';
-    g.turn = nextSeat(g.dealer);
+    // À la générale, c'est le preneur qui entame
+    g.turn = g.contract.value === GENERALE ? g.contract.seat : nextSeat(g.dealer);
     g.leader = g.turn;
     const t = g.contract.suit;
     for (let s = 0; s < 4; s++) {
@@ -362,6 +389,7 @@
     g.wonCards[team].push(...g.trick.map((x) => x.card));
     g.tricksWon[team]++;
     g.tricksPlayed++;
+    (g.trickSeats || (g.trickSeats = [])).push(w);
     g.lastTrick = { cards: g.trick.slice(), winner: w };
     g.trick = [];
     g.trickDone = false;
@@ -394,7 +422,8 @@
     const total = [card[0] + belote[0], card[1] + belote[1]];
 
     let made;
-    if (c.value === CAPOT) made = g.tricksWon[att] === 8;
+    if (c.value === GENERALE) made = g.trickSeats.length === 8 && g.trickSeats.every((s) => s === c.seat);
+    else if (c.value === CAPOT) made = g.tricksWon[att] === 8;
     else made = total[att] >= c.value && total[att] > total[def];
 
     const mult = g.coinche === 2 ? 4 : g.coinche === 1 ? 2 : 1;
@@ -414,7 +443,7 @@
     const entry = {
       round: g.round, dealer: g.dealer, contract: { ...c }, coinche: g.coinche, coincheSeat: g.coincheSeat,
       made, cardPoints: card, rawPoints: raw, belote, beloteTeam, beloteCount, total, capotTeam, mult, gain,
-      tricksWon: g.tricksWon.slice(), scores: g.scores.slice(), lastTrickTeam: g.lastTrickTeam,
+      tricksWon: g.tricksWon.slice(), takerTricks: g.trickSeats.filter((s) => s === c.seat).length, scores: g.scores.slice(), lastTrickTeam: g.lastTrickTeam,
     };
     g.history.push(entry);
     g.lastRound = entry;
@@ -460,9 +489,9 @@
 
   const api = {
     SUITS, CONTRACT_SUITS, RANKS, SUIT_INFO, TA_PTS, SA_PTS, RANK_NAME, RANK_SHORT, TRUMP_ORDER, PLAIN_ORDER, TRUMP_PTS, PLAIN_PTS,
-    BID_VALUES, CAPOT, CAPOT_POINTS, BELOTE_PTS, DIX_DE_DER,
+    BID_VALUES, CAPOT, GENERALE, CAPOT_POINTS, BELOTE_PTS, DIX_DE_DER,
     rankOf, suitOf, teamOf, partnerOf, nextSeat, cardPoints, strength, cardLabel, bidLabel,
-    newDeck, shuffle, trickWinnerIndex, legalCards, createGame, startRound, biddingOptions,
+    newDeck, shuffle, strongDeal, trickWinnerIndex, legalCards, createGame, startRound, biddingOptions,
     apply, collectTrick, viewFor, randInt,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

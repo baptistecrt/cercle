@@ -7,7 +7,7 @@
 <meta name="description" content="Belote coinchée en ligne entre amis : chacun son écran, chacun ses cartes.">
 <meta name="theme-color" content="#3b0d16">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='10' y='4' width='44' height='56' rx='6' fill='%23f6efe0' stroke='%23c9a44c' stroke-width='3'/%3E%3Cpath d='M32 18c-6 8-14 12-14 19a7 7 0 0 0 12 4l-3 9h10l-3-9a7 7 0 0 0 12-4c0-7-8-11-14-19z' fill='%237a1626'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/style.css?v=20261109-1345">
+<link rel="stylesheet" href="css/style.css?v=20261110-0900">
 </head>
 <body>
 
@@ -111,7 +111,7 @@
       </div>
       <button id="btn-stand" class="link-btn" hidden>Regarder sans jouer</button>
       <button id="btn-leave" class="link-btn">Quitter la table</button>
-      <p class="version">Version du 9 nov. 2026, 13 h 45</p>
+      <p class="version">Version du 10 nov. 2026, 9 h</p>
     </aside>
   </div>
 </section>
@@ -262,7 +262,7 @@
       <button class="btn btn-ghost-dark" id="opt-lobby">Arrêter la partie et revenir au salon</button>
     </div>
     <button class="btn btn-ghost-dark" id="opt-quit">Quitter la table</button>
-    <p class="version" id="version">Version du 9 nov. 2026, 13 h 45</p>
+    <p class="version" id="version">Version du 10 nov. 2026, 9 h</p>
   </div>
 </div>
 
@@ -282,9 +282,11 @@
       </table>
       <p>Total : 152 points + 10 de der (dernier pli) = 162. Belote-rebelote (Roi + Dame d'atout dans la même main) : 20 points, annoncés automatiquement.</p>
       <h3>Enchères</h3>
-      <p>À partir du joueur à droite du donneur, chacun annonce un contrat (80, 90… 160, ou Capot = faire tous les plis) avec une couleur d'atout, ou passe. Chaque annonce doit être plus haute que la précédente. Les enchères s'arrêtent après 3 « passe » consécutifs. Si tout le monde passe, on redistribue.</p>
+      <p>À partir du joueur à droite du donneur, chacun annonce un contrat (80, 90… 160, Capot = l'équipe fait tous les plis, ou Générale = le preneur fait tous les plis à lui seul) avec une couleur d'atout, ou passe. Chaque annonce doit être plus haute que la précédente. Les enchères s'arrêtent après 3 « passe » consécutifs. Si tout le monde passe, on redistribue.</p>
       <p>Un adversaire du preneur peut <b>coincher</b> (points doublés). Les enchères sont alors closes, mais l'équipe du preneur peut <b>surcoincher</b> (points quadruplés).</p>
       <p>Par défaut, on peut coincher <b>à tout moment</b> pendant les enchères, même quand ce n'est pas son tour : un bouton « Coinche ! » (ou la touche <kbd>C</kbd>) apparaît dès qu'un adversaire a annoncé. Après une coinche, les deux preneurs peuvent surcoincher de la même façon. L'hôte peut revenir à la règle « seulement à son tour » dans le salon.</p>
+      <h3>Générale</h3>
+      <p>L'annonce la plus haute (au-dessus du capot) : le preneur s'engage à faire <b>les 8 plis à lui seul</b>. C'est lui qui entame le premier pli, quel que soit le donneur. Si son partenaire remporte un seul pli, la générale est chutée. Elle vaut 500 : réussie, l'équipe marque 500 + 252 ; chutée, la défense marque 160 + 500. Elle se coinche et se surcoinche comme les autres contrats.</p>
       <h3>Tout atout et sans atout</h3>
       <p>On peut aussi annoncer <b>tout atout</b> (toutes les couleurs sont atout) ou <b>sans atout</b> (aucun atout). Les barèmes changent pour que la donne vaille toujours 162 points avec le 10 de der :</p>
       <table class="val-table">
@@ -297,7 +299,7 @@
       <h3>Jeu de la carte</h3>
       <p>Il faut toujours fournir à la couleur demandée. À l'atout, il faut monter si on peut (même sur son partenaire). Si on n'a pas la couleur : si le partenaire est maître, on joue ce qu'on veut ; sinon il faut couper, surcouper si un adversaire a déjà coupé, et sous-couper si on ne peut pas monter. Sans atout, on se défausse.</p>
       <h3>Décompte</h3>
-      <p>Le contrat est réussi si l'équipe du preneur fait au moins le montant annoncé et plus que la défense (belote comprise). Capot : 252 points pour l'équipe qui fait tous les plis.</p>
+      <p>Le contrat est réussi si l'équipe du preneur fait au moins le montant annoncé et plus que la défense (belote comprise). Capot : 252 points pour l'équipe qui fait tous les plis (et la générale n'est réussie que si c'est le preneur seul qui les fait).</p>
       <ul>
         <li><b>Réussi</b> : le preneur marque contrat + ses points, la défense marque ses points.</li>
         <li><b>Chuté (dedans)</b> : le preneur marque 0, la défense marque 160 + contrat.</li>
@@ -312,9 +314,9 @@
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script src="../common/vendor/peerjs.min.js"></script>
-<script src="js/engine.js?v=20261109-1345"></script>
-<script src="js/bot.js?v=20261109-1345"></script>
-<script src="js/online.js?v=20261109-1345"></script>
-<script src="js/app.js?v=20261109-1345"></script>
+<script src="js/engine.js?v=20261110-0900"></script>
+<script src="js/bot.js?v=20261110-0900"></script>
+<script src="js/online.js?v=20261110-0900"></script>
+<script src="js/app.js?v=20261110-0900"></script>
 </body>
 </html>

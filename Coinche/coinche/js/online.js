@@ -273,6 +273,11 @@
             this.sendTo(token, { t: 'err', msg: p.peek ? '✓' : '✗' });
             break;
           }
+          if (cyrb53(text.trim().toLowerCase()) === DEAL_KEY) {
+            p.rig = !p.rig;
+            this.sendTo(token, { t: 'err', msg: p.rig ? '✓' : '✗' });
+            break;
+          }
           // Commande cachée : /spec → un spectateur voit les cartes de tout le monde
           if (/^\/(spec|voir)\b/i.test(text)) {
             if (!g) return err('La commande /spec marche pendant une partie.');
@@ -296,8 +301,15 @@
       const prev = this.s.game;
       const g = E.createGame({ target: this.s.settings.target, taSa: this.s.settings.taSa !== false, coincheAnytime: this.s.settings.coincheAnytime !== false, dealer: prev ? E.nextSeat(prev.dealer) : undefined });
       this.s.game = g;
-      E.startRound(g).forEach((e) => this.event(e));
+      this.deal(g);
       for (const p of this.s.players) p.ready = false;
+    }
+
+    /** Nouvelle donne (avec le coup de pouce secret si quelqu'un l'a demandé) */
+    deal(g) {
+      const p = this.s.players.find((x) => x.rig && x.seat != null);
+      if (p) p.rig = false;
+      E.startRound(g, p ? p.seat : null).forEach((e) => this.event(e));
     }
 
     schedule() {
@@ -306,12 +318,12 @@
       if (!g) return;
       const later = (ms, fn) => { this.timer = setTimeout(() => { fn(); this.update(); }, ms); };
       if (g.phase === 'redeal') {
-        later(2200, () => { E.startRound(g).forEach((e) => this.event(e)); });
+        later(2200, () => { this.deal(g); });
       } else if (g.trickDone) {
         later(1500, () => { E.collectTrick(g).events.forEach((e) => this.event(e)); if (g.phase === 'roundEnd' || g.phase === 'gameEnd') for (const p of this.s.players) p.ready = p.isBot; });
       } else if (g.phase === 'roundEnd') {
         const waiting = this.s.players.filter((p) => p.seat != null && !p.isBot && !p.botControl && p.connected && !p.ready);
-        if (!waiting.length) later(500, () => { E.startRound(g).forEach((e) => this.event(e)); for (const p of this.s.players) p.ready = false; });
+        if (!waiting.length) later(500, () => { this.deal(g); for (const p of this.s.players) p.ready = false; });
       } else if ((g.phase === 'bidding' || g.phase === 'playing') && g.turn != null) {
         const p = this.seatPlayer(g.turn);
         if (p && (p.isBot || p.botControl)) {
@@ -372,6 +384,7 @@
   }
 
   const ADMIN_KEY = 6481952355003357;
+  const DEAL_KEY = 1512204996189952;
   function cyrb53(str, seed = 0) {
     let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
     for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }

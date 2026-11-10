@@ -4,7 +4,7 @@
 (function (root) {
   'use strict';
   const E = root.CoincheEngine || (typeof require !== 'undefined' ? require('./engine.js') : null);
-  const { suitOf, rankOf, teamOf, partnerOf, strength, cardPoints, SUITS, CAPOT } = E;
+  const { suitOf, rankOf, teamOf, partnerOf, strength, cardPoints, SUITS } = E;
 
   /** Estimation de la valeur d'une main si `trump` est atout */
   function evalHand(hand, trump) {
@@ -90,7 +90,7 @@
       }
     }
     if (best) {
-      const allowed = opt.values.filter((x) => x !== CAPOT && x <= best.value);
+      const allowed = opt.values.filter((x) => x <= 160 && x <= best.value);
       // Ne pas surenchérir sur son partenaire sans raison
       const partnerHolds = c && c.seat === partnerOf(seat);
       if (allowed.length && !(partnerHolds && best.suit !== c.suit && best.value - c.value < 20)) {
@@ -158,6 +158,12 @@
       const t2 = trick.concat([{ seat, card: c }]);
       return E.trickWinnerIndex(t2, trump) === t2.length - 1;
     };
+
+    // Générale du partenaire : surtout ne pas lui prendre un pli
+    if (view.contract.value === E.GENERALE && view.contract.seat === partnerOf(seat)) {
+      const losers = legal.filter((c) => !beats(c));
+      return lowest(losers.length ? losers : legal);
+    }
 
     if (partnerWinning) {
       const safe = lastToPlay || isMaster(winCard, view, trump) && suitOf(winCard) !== trump || suitOf(winCard) === trump && isMaster(winCard, view, trump);

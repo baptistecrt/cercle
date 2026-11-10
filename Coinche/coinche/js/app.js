@@ -71,7 +71,8 @@
   function openModal(id) { $('#' + id).hidden = false; }
   function closeModal(id) { $('#' + id).hidden = true; }
   const suitHtml = (s) => (s === 'TA' || s === 'SA') ? '<span class="sword">' + E.SUIT_INFO[s].name.toLowerCase() + '</span>' : '<span class="' + (E.SUIT_INFO[s].red ? 'sred' : '') + '">' + E.SUIT_INFO[s].sym + '</span>';
-  const bidHtml = (v, s) => (v === E.CAPOT ? 'Capot' : v) + ' ' + suitHtml(s);
+  const valLabel = (v) => (v === E.CAPOT ? 'Capot' : v === E.GENERALE ? 'Générale' : v);
+  const bidHtml = (v, s) => valLabel(v) + ' ' + suitHtml(s);
   const send = (m) => app.link && app.send(m);
 
   function players() { return app.msg ? app.msg.players : []; }
@@ -532,7 +533,7 @@
     const vals = $('#bid-values'), suits = $('#bid-suits');
     vals.hidden = surco || !o.values.length; suits.hidden = surco || !o.values.length;
     if (!o.values.includes(app.selValue)) app.selValue = o.values[0];
-    vals.innerHTML = o.values.map((v) => '<button class="bid-v' + (v === app.selValue ? ' sel' : '') + '" data-v="' + v + '">' + (v === E.CAPOT ? 'Capot' : v) + '</button>').join('');
+    vals.innerHTML = o.values.map((v) => '<button class="bid-v' + (v === app.selValue ? ' sel' : '') + '" data-v="' + v + '">' + valLabel(v) + '</button>').join('');
     suits.classList.toggle('six', (o.suits || []).length > 4);
     suits.innerHTML = (o.suits || ['S', 'H', 'D', 'C']).map((s) => '<button class="bid-suit' + (E.SUIT_INFO[s].red ? ' sred' : '') + '" data-s="' + s + '"><span class="sym">' + E.SUIT_INFO[s].sym + '</span><small>' + E.SUIT_INFO[s].name + '</small></button>').join('');
     $('#b-coinche').hidden = !o.canCoinche;
@@ -688,7 +689,7 @@
     const att = r.contract.seat % 2;
     $('#r-title').innerHTML = r.made ? '<span class="stamp ok">Contrat réussi</span>' : '<span class="stamp">Dedans !</span>';
     const co = r.coinche === 2 ? ', surcoinché' : r.coinche === 1 ? ', coinché' : '';
-    $('#r-contract').innerHTML = esc(nameAt(r.contract.seat)) + ' a pris ' + bidHtml(r.contract.value, r.contract.suit) + co + ' — Équipe ' + (att + 1) + ' à la prise, ' + r.tricksWon[att] + ' pli' + (r.tricksWon[att] > 1 ? 's' : '') + ' sur 8.';
+    $('#r-contract').innerHTML = esc(nameAt(r.contract.seat)) + ' a pris ' + bidHtml(r.contract.value, r.contract.suit) + co + ' — Équipe ' + (att + 1) + ' à la prise, ' + r.tricksWon[att] + ' pli' + (r.tricksWon[att] > 1 ? 's' : '') + ' sur 8' + (r.contract.value === E.GENERALE ? ' (dont ' + (r.takerTricks || 0) + ' par ' + esc(nameAt(r.contract.seat)) + ')' : '') + '.';
     const row = (label, a, b, cls) => '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td>' + label + '</td><td>' + a + '</td><td>' + b + '</td></tr>';
     let h = '<thead><tr><th></th><th><span class="team-chip t0">' + esc(teamName(0)) + '</span></th><th><span class="team-chip t1">' + esc(teamName(1)) + '</span></th></tr></thead><tbody>';
     if (r.capotTeam != null) h += row('Points des plis (capot !)', r.cardPoints[0], r.cardPoints[1]);
@@ -721,7 +722,7 @@
     if (!g.history.length) h += '<tr><td colspan="4">Aucune donne terminée pour l\'instant.</td></tr>';
     g.history.forEach((r) => {
       const co = r.coinche === 2 ? ' ×4' : r.coinche === 1 ? ' ×2' : '';
-      h += '<tr><td>' + r.round + '</td><td' + (r.made ? '' : ' class="fail"') + '>' + esc(nameAt(r.contract.seat)) + ' · ' + bidHtml(r.contract.value, r.contract.suit) + co + (r.capotTeam != null ? ' · capot' : '') + '</td>' +
+      h += '<tr><td>' + r.round + '</td><td' + (r.made ? '' : ' class="fail"') + '>' + esc(nameAt(r.contract.seat)) + ' · ' + bidHtml(r.contract.value, r.contract.suit) + co + (r.contract.value === E.GENERALE ? '' : r.capotTeam != null ? ' · capot' : '') + '</td>' +
         '<td>+' + r.gain[0] + ' <span class="cum">(' + r.scores[0] + ')</span></td><td>+' + r.gain[1] + ' <span class="cum">(' + r.scores[1] + ')</span></td></tr>';
     });
     h += '</tbody><tfoot><tr><td></td><td>Total (en ' + g.target + ')</td><td>' + g.scores[0] + '</td><td>' + g.scores[1] + '</td></tr></tfoot>';

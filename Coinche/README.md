@@ -50,7 +50,7 @@ La commande ne marche que pour les spectateurs : un joueur assis à la table ne 
 
 Chaque jeu a un bouton **Règles** qui explique exactement ce qui est appliqué. En résumé :
 
-- **Coinche** : enchères 80 → 160 puis capot, en couleur, **tout atout** ou **sans atout** ; coinche ×2 (possible à tout moment des enchères) et surcoinche ×4 ; obligations complètes (fournir, monter à l'atout, couper, surcouper, sous-couper ; libre si le partenaire est maître) ; belote-rebelote 20 points (**à tout atout, toutes les belotes comptent**, 20 par couleur ; pas de belote à sans atout) ; 10 de der ; capot 252.
+- **Coinche** : enchères 80 → 160 puis capot et **générale** (le preneur fait les 8 plis à lui seul, 500), en couleur, **tout atout** ou **sans atout** ; coinche ×2 (possible à tout moment des enchères) et surcoinche ×4 ; obligations complètes (fournir, monter à l'atout, couper, surcouper, sous-couper ; libre si le partenaire est maître) ; belote-rebelote 20 points (**à tout atout, toutes les belotes comptent**, 20 par couleur ; pas de belote à sans atout) ; 10 de der ; capot 252.
 - **Tarot** : règles FFT. Prise, garde, garde sans, garde contre ; chien et écart ; appel au roi à 5 ; excuse ; petit au bout ; poignées ; chelem.
 - **Poker** : blindes qui montent (réglable), relance minimum, tapis, pots annexes, partage en cas d'égalité.
 - **Capitole** : achat ou enchères, loyers doublés sur une couleur complète, construction équilibrée, banque limitée à 32 maisons et 12 hôtels, hypothèques, prison, cartes Hasard / Quartier, échanges entre joueurs, faillite. Option : partie limitée en tours, cagnotte au Jardin des Plantes.
